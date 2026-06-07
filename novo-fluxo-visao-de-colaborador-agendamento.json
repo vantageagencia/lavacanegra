@@ -1,0 +1,74 @@
+{
+  "name": "Novo fluxo - Visão de colaborador - Agendamento",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "bd984da3-6152-45f1-bd07-acdc058a96f8",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "node-webhook",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 320],
+      "webhookId": "bd984da3-6152-45f1-bd07-acdc058a96f8"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Recebe payload do dashboard e monta os campos do evento\nconst raw = $input.first().json.body || $input.first().json;\n\nconst data = String(raw.data || '').trim();\nconst horario = String(raw.horario || '').trim();\nconst qtd = Number(raw.qtd_pessoas || 0);\nconst email = String(raw.cliente_email || '').trim();\nconst observ = String(raw.observacoes || '').trim();\n\n// Start/End ISO no fuso Manaus (UTC-4, sem horário de verão)\nconst startIso = `${data}T${horario}:00-04:00`;\nconst [h, m] = horario.split(':').map(Number);\nconst endMinutes = h * 60 + m + 90; // duração 1h30\nconst endH = String(Math.floor(endMinutes / 60) % 24).padStart(2, '0');\nconst endM = String(endMinutes % 60).padStart(2, '0');\nconst endIso = `${data}T${endH}:${endM}:00-04:00`;\n\nconst desc = [\n  `Cliente: ${raw.cliente_nome}`,\n  `Telefone: ${raw.cliente_telefone}`,\n  email ? `Email: ${email}` : null,\n  `Área: ${raw.area}`,\n  `Pessoas: ${qtd}`,\n  observ ? `Obs: ${observ}` : null,\n].filter(Boolean).join('\\n');\n\nreturn [{\n  json: {\n    start_iso: startIso,\n    end_iso: endIso,\n    summary: `Reserva LVN — ${raw.cliente_nome} (${qtd}p)`,\n    description: desc,\n    location: `La Vaca Negra · ${raw.area}`,\n  }\n}];"
+      },
+      "id": "node-prepara",
+      "name": "Prepara campos",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 320]
+    },
+    {
+      "parameters": {
+        "resource": "event",
+        "operation": "create",
+        "calendar": { "__rl": true, "mode": "list", "value": "" },
+        "start": "={{ $json.start_iso }}",
+        "end": "={{ $json.end_iso }}",
+        "additionalFields": {
+          "summary": "={{ $json.summary }}",
+          "description": "={{ $json.description }}",
+          "location": "={{ $json.location }}"
+        }
+      },
+      "id": "node-calendar",
+      "name": "Criar evento",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1,
+      "position": [680, 320],
+      "notes": "Conecte a credencial Google OAuth2 e escolha o Calendar antes de ativar."
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"sucesso\": true, \"event_id\": \"{{ $json.id }}\" }",
+        "options": {}
+      },
+      "id": "node-respond",
+      "name": "Responder OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [900, 320]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [[{ "node": "Prepara campos", "type": "main", "index": 0 }]]
+    },
+    "Prepara campos": {
+      "main": [[{ "node": "Criar evento", "type": "main", "index": 0 }]]
+    },
+    "Criar evento": {
+      "main": [[{ "node": "Responder OK", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": { "executionOrder": "v1" },
+  "active": false
+}
