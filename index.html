@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LA VACA NEGRA</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="img/favicon.png" type="image/png">
+
+  <style>
+    /* ===================== BANNERS (SEU CSS ORIGINAL) ===================== */
+    body {
+      background-color: #000000; /* fundo alterado */
+    }
+
+    .banners a img {
+      display: block;
+      margin-bottom: 10px; /* reduz o espaço entre os banners */
+    }
+
+    .desktop-banner { display: block; }
+    .mobile-banner { display: none; }
+    @media (max-width: 768px) {
+      .desktop-banner { display: none; }
+      .mobile-banner { display: block; }
+    }
+
+    /* ===================== LOADER (AJUSTADO) ===================== */
+    :root{
+      --logo-size: 140px;       /* Largura/altura da logo no loader */
+      --bar-extra: 40px;        /* Quanto a barra é maior que a logo */
+      --bar-height: 6px;        /* Altura da barra */
+      --bar-color: #e41334;     /* Amarelo da logo */
+    }
+    .loader-wrap{
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: grid;
+      place-items: center;
+      background: #000000; /* fundo preto */
+    }
+    .loader-inner{
+      text-align: center;
+      width: fit-content;
+      font-family: 'Montserrat', sans-serif;
+    }
+    .loader-logo img{
+      width: var(--logo-size);
+      height: var(--logo-size);
+      object-fit: contain;
+      animation: fadeIn .8s ease-out forwards;
+    }
+    .loader-bar{
+      position: relative;
+      width: calc(var(--logo-size) + var(--bar-extra));
+      height: var(--bar-height);
+      margin: 18px auto 0;
+      border-radius: 999px;
+      background: rgba(255,255,255,.15);
+      overflow: hidden;
+    }
+    .loader-fill{
+      position: absolute;
+      inset: 0;
+      background: var(--bar-color);
+      transform-origin: left;   /* cresce agora a partir da esquerda */
+      transform: scaleX(0);
+      animation: fillLtoR 2.5s ease-in-out forwards;
+    }
+    .loader-text{
+      margin-top: 10px;
+      color: rgba(255,255,255,.85);
+      animation: fadeIn .8s ease-out forwards;
+    }
+    body.loading > *:not(#loader){ display: none; }
+    @keyframes fillLtoR{
+      to{ transform: scaleX(1); }
+    }
+    @keyframes fadeIn{
+      from{ opacity: 0; transform: translateY(6px); }
+      to{ opacity: 1; transform: translateY(0); }
+    }
+    .loader-wrap.fade-out{
+      opacity: 0;
+      transition: opacity .4s ease;
+      pointer-events: none;
+    }
+  </style>
+</head>
+
+<body class="loading">
+  <!-- ========== LOADER ========== -->
+  <div id="loader" class="loader-wrap">
+    <div class="loader-inner">
+      <div class="loader-logo">
+        <!-- Coloque sua logo em img/logo.png -->
+        <img src="img/logo.png" alt="Logo K2 Business" />
+      </div>
+      <div class="loader-bar">
+        <span class="loader-fill"></span>
+      </div>
+      <p class="loader-text">Carregando...</p>
+    </div>
+  </div>
+  <!-- ========== FIM LOADER ========== -->
+
+  <!-- ========== SEU CONTEÚDO ORIGINAL ========== -->
+  <div class="hero">
+    <div class="logo-container">
+      <img src="img/logo.png" alt="Logo" class="logo" />
+      <br><br>
+      <div class="social-icons">
+        <a href="https://www.instagram.com/michelbrasildecor/"><img src="img/instagram.png" alt="Instagram" /></a>
+        <a href="https://wa.me/557581913891"><img src="img/whatsapp.png" alt="WhatsApp" /></a>
+      </div>
+    </div>
+    <div class="arrow"><font size="3">Clique e acesse ↓</font></div>
+  </div>
+
+  <div class="banners">
+    <a href="https://wa.me/557581913891" target="_blank" class="desktop-banner"><img src="img/banner.png" alt="Banner 1" /></a>
+    <a href="https://la-vaca-negra.ola.click/products" target="_blank" class="desktop-banner"><img src="img/banner2.png" alt="Banner 2" /></a>
+    <a href="https://lavacanegracortesargentinos.ola.click/products" target="_blank" class="desktop-banner"><img src="img/banner3.png" alt="Banner 3" /></a>
+     <a href="https://www.google.com.br/search?client=safari&hl=pt-br&sxsrf=ALiCzsazRRIoZUEID9TzzIHr9jAzVsDpvg:1660745379104&q=La+Vaca+Negra+Cortes+Argentinos&ludocid=6276500884344451912&gsas=1&client=safari&lsig=AB86z5VyklAjAbY4uTKwzJFjyAEh&kgs=5f5820457c83a5f6&shndl=-1&source=sh/x/kp/local/3&entrypoint=sh/x/kp/local" target="_blank" class="desktop-banner"><img src="img/banner4.png" alt="Banner 4" /></a>
+      <a href="https://api.whatsapp.com/send?phone=5592984120110&text=Ol%C3%A1,%20Gostaria%20de%20fazer%20uma%20reserva%20no%20La%20Vaca%20Negra!" target="_blank" class="desktop-banner"><img src="img/banner5.png" alt="Banner 5" /></a>
+      <a href="https://api.whatsapp.com/send?phone=5592985652606&text=Gostaria%20de%20fazer%20um%20pedido" target="_blank" class="desktop-banner"><img src="img/banner6.png" alt="Banner 5" /></a>
+      <a href="https://www.ifood.com.br/delivery/manaus-am/hamburguesa-de-la-vaca-adrianopolis/3432b9ba-7596-43c1-80cc-ed39663c8428" target="_blank" class="desktop-banner"><img src="img/banner7.png" alt="Banner 5" /></a>
+      <a href="https://www.ifood.com.br/delivery/manaus-am/la-vaca-negra-cortes-argentinos-adrianopolis/96490fd2-bdf3-4328-b94f-7f3f6c082e67" target="_blank" class="desktop-banner"><img src="img/banner8.png" alt="Banner 5" /></a>
+
+    <a href="https://wa.me/557581913891" target="_blank" class="mobile-banner"><img src="img/banner1.png" alt="Banner 1 Mobile" /></a>
+    <a href="https://la-vaca-negra.ola.click/products" target="_blank" class="mobile-banner"><img src="img/banner22.png" alt="Banner 2 Mobile" /></a>
+    <a href="https://lavacanegracortesargentinos.ola.click/products" target="_blank" class="mobile-banner"><img src="img/banner33.png" alt="Banner 3 Mobile" /></a>
+  <a href="https://www.google.com.br/search?client=safari&hl=pt-br&sxsrf=ALiCzsazRRIoZUEID9TzzIHr9jAzVsDpvg:1660745379104&q=La+Vaca+Negra+Cortes+Argentinos&ludocid=6276500884344451912&gsas=1&client=safari&lsig=AB86z5VyklAjAbY4uTKwzJFjyAEh&kgs=5f5820457c83a5f6&shndl=-1&source=sh/x/kp/local/3&entrypoint=sh/x/kp/local" target="_blank" class="mobile-banner"><img src="img/banner44.png" alt="Banner 4 Mobile" /></a>
+  <a href="https://api.whatsapp.com/send?phone=5592984120110&text=Ol%C3%A1,%20Gostaria%20de%20fazer%20uma%20reserva%20no%20La%20Vaca%20Negra!" target="_blank" class="mobile-banner"><img src="img/banner55.png" alt="Banner 5 Mobile" /></a>
+<a href="https://api.whatsapp.com/send?phone=5592985652606&text=Gostaria%20de%20fazer%20um%20pedido" target="_blank" class="mobile-banner"><img src="img/banner66.png" alt="Banner 6 Mobile" /></a>
+<a href="https://www.ifood.com.br/delivery/manaus-am/hamburguesa-de-la-vaca-adrianopolis/3432b9ba-7596-43c1-80cc-ed39663c8428" target="_blank" class="mobile-banner"><img src="img/banner77.png" alt="Banner 7 Mobile" /></a>
+<a href="https://www.ifood.com.br/delivery/manaus-am/la-vaca-negra-cortes-argentinos-adrianopolis/96490fd2-bdf3-4328-b94f-7f3f6c082e67" target="_blank" class="mobile-banner"><img src="img/banner88.png" alt="Banner 8 Mobile" /></a></div>
+  
+
+  <footer>
+    © Copyright 2025 LA VACA NEGRA. Todos os direitos reservados. <br />
+  </footer>
+  <!-- ========== FIM DO CONTEÚDO ========== -->
+
+  <script>
+    const LOADER_TIMEOUT = 2500;
+    window.addEventListener('load', () => {
+      const loader = document.getElementById('loader');
+      setTimeout(() => {
+        loader.classList.add('fade-out');
+        setTimeout(() => {
+          loader.remove();
+          document.body.classList.remove('loading');
+        }, 450);
+      }, LOADER_TIMEOUT);
+    });
+  </script>
+</body>
+</html>
