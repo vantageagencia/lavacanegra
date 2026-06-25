@@ -1,6 +1,6 @@
 import { addDays, format, startOfWeek } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { CalendarDays, Users } from "lucide-react";
+import { CalendarDays, Users, AlertTriangle } from "lucide-react";
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getUserRole, isAdminRole } from "@/lib/auth";
@@ -106,7 +106,7 @@ export default async function ReservasPage({
         ? "all"
         : defaultPeriodoByTime();
 
-  const [areasRes, mesasRes, listRes, semanaRes] = await Promise.all([
+  const [areasRes, mesasRes, listRes, semanaRes, pendentesRes] = await Promise.all([
     supabase
       .from("areas")
       .select("codigo, nome, capacidade_max, evento_fechado")
@@ -135,11 +135,23 @@ export default async function ReservasPage({
       .select("data_reserva, periodo, qtd_pessoas")
       .gte("data_reserva", format(weekStart, "yyyy-MM-dd"))
       .lte("data_reserva", format(weekEnd, "yyyy-MM-dd")),
+    // Pendentes de marcação: reservas passadas ainda "confirmada" (ninguém
+    // marcou chegou/não veio/cancelou). Vira a fila de trabalho do responsável.
+    supabase
+      .from("reservas")
+      .select(
+        "id, cliente_nome, area_codigo, qtd_pessoas, horario, data_reserva, status, reservas_mesas(mesa_id)"
+      )
+      .eq("status", "confirmada")
+      .lt("data_reserva", format(today, "yyyy-MM-dd"))
+      .order("data_reserva", { ascending: false })
+      .limit(50),
   ]);
 
   const areas = (areasRes.data ?? []) as Area[];
   const mesas = (mesasRes.data ?? []) as Mesa[];
   const reservas = (listRes.data ?? []) as Reserva[];
+  const pendentes = (pendentesRes.data ?? []) as Reserva[];
   const semana = (semanaRes.data ?? []) as {
     data_reserva: string;
     periodo: string;
@@ -195,6 +207,38 @@ export default async function ReservasPage({
           />
         }
       />
+
+      {pendentes.length > 0 && (
+        <Card className="border-amber-500/40 bg-amber-500/5">
+          <CardHeader className="flex flex-row items-center justify-between pb-3">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <AlertTriangle className="h-4 w-4 text-amber-500" />
+              Pendentes de marcação
+            </CardTitle>
+            <Badge variant="warning">{pendentes.length}</Badge>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-xs text-muted-foreground">
+              Reservas passadas que ainda não foram marcadas. Marque cada uma como
+              compareceu, não veio ou cancelou.
+            </p>
+            <DoorList
+              reservas={pendentes.map((r) => ({
+                id: r.id,
+                hora: formatHora(r.horario),
+                cliente_nome: r.cliente_nome,
+                qtd_pessoas: r.qtd_pessoas,
+                area: areaNome(r.area_codigo),
+                mesa: mesasDaReserva(r),
+                status: r.status,
+                data: format(new Date(r.data_reserva + "T00:00:00"), "EEE, dd/MM", {
+                  locale: ptBR,
+                }),
+              }))}
+            />
+          </CardContent>
+        </Card>
+      )}
 
       {isAdmin && (
         <Card>

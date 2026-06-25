@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { Download, FileType, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 
@@ -25,7 +26,9 @@ export function DownloadForm({ tipo, defaultFrom, defaultTo }: DownloadFormProps
 
       const res = await fetch(`/api/relatorios/${tipo}?${sp.toString()}`);
       if (!res.ok) {
-        alert("Erro ao gerar relatório");
+        toast.error("Erro ao gerar relatório", {
+          description: `O servidor respondeu ${res.status}. Tente de novo.`,
+        });
         return;
       }
       const blob = await res.blob();

@@ -1,7 +1,14 @@
 "use client";
 
 import { useTransition } from "react";
-import { CheckCircle2, AlertTriangle, Loader2, Clock, Users } from "lucide-react";
+import {
+  CheckCircle2,
+  AlertTriangle,
+  XCircle,
+  Loader2,
+  Clock,
+  Users,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { cn } from "@/lib/utils";
@@ -15,6 +22,8 @@ export interface DoorReserva {
   area: string;
   mesa: string | null;
   status: ReservaStatus;
+  /** Data formatada (ex.: "qua, 24/06") — exibida só em itens pendentes/passados. */
+  data?: string;
 }
 
 const STATUS_LABEL: Record<ReservaStatus, string> = {
@@ -81,6 +90,12 @@ function DoorCard({ reserva: r }: { reserva: DoorReserva }) {
               {r.cliente_nome}
             </p>
             <p className="flex items-center gap-2 text-xs text-muted-foreground">
+              {r.data && (
+                <>
+                  <span className="font-medium text-foreground/70">{r.data}</span>
+                  <span>·</span>
+                </>
+              )}
               <span className="flex items-center gap-1">
                 <Users className="h-3 w-3" /> {r.qtd_pessoas}
               </span>
@@ -147,6 +162,16 @@ function DoorCard({ reserva: r }: { reserva: DoorReserva }) {
             )}
             Não veio
           </button>
+          {!cancelada && (
+            <button
+              type="button"
+              disabled={pending}
+              onClick={() => setStatus("cancelada", `${r.cliente_nome}: reserva cancelada`)}
+              className="col-span-2 flex h-9 items-center justify-center gap-1.5 rounded-lg text-xs text-muted-foreground transition-colors hover:bg-muted disabled:opacity-50"
+            >
+              <XCircle className="h-3.5 w-3.5" /> Cancelou
+            </button>
+          )}
         </div>
       )}
     </div>

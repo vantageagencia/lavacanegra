@@ -1,36 +1,54 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Dashboard La Vaca Negra
 
-## Getting Started
+Painel de reservas, ocupação e CRM do restaurante La Vaca Negra, integrado ao
+agente de WhatsApp (Olivia) via n8n. Construído pela VANTAGE.
 
-First, run the development server:
+## Stack
+
+- **Next.js 16** (App Router, `proxy.ts` no lugar de middleware) + React 19
+- **Supabase** — banco, auth (email/senha) e realtime
+- **Tailwind 4** + shadcn/ui
+- **n8n** — webhook que cria reservas (mesmo fluxo da Olivia)
+- Deploy na **Vercel** (região `gru1`)
+
+## Rodando localmente
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev      # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Precisa de um `.env.local` com:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+NEXT_PUBLIC_SUPABASE_URL=...
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=...   # chave anon (client/login)
+SUPABASE_SERVICE_ROLE_KEY=...              # service role (só server-side)
+N8N_DASHBOARD_WEBHOOK_URL=...              # webhook do n8n que cria reserva
+N8N_DASHBOARD_TOKEN=...                    # token enviado no header X-Dashboard-Token
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Estrutura
 
-## Learn More
+- `src/app/(app)/` — páginas autenticadas (Reservas, Mapa, Visão geral, Clientes, Gestão)
+- `src/app/api/relatorios/[tipo]/` — geração de CSV/PDF (server-side)
+- `src/lib/auth.ts` — `getUserRole`, `requireAdmin`, `assertAdmin`, `assertAuth`
+- `src/lib/supabase/` — clients (browser, server, admin/service-role, proxy)
 
-To learn more about Next.js, take a look at the following resources:
+## Papéis (roles)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **admin_geral / admin** — acesso total; só `admin_geral` cria/remove outros admins
+- **user** (colaborador da porta) — vê só Reservas, em **modo porta** (cards touch
+  com Chegou / Não veio / Cancelou) + a fila de **pendentes de marcação**
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Deploy
 
-## Deploy on Vercel
+Deploy é **manual** via Vercel CLI (não há auto-deploy no push):
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+vercel deploy            # preview (URL de teste)
+vercel deploy --prod     # produção (la-vaca-dashboard.vercel.app)
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+> As variáveis de ambiente estão cadastradas em Production, Preview e Development
+> no projeto da Vercel.

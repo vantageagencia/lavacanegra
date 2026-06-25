@@ -106,7 +106,10 @@ export default async function OcupacaoPage({
   ocupacao.forEach((o) => {
     const key = `${o.area_codigo}|${o.periodo}`;
     const cur = groupBy.get(key) ?? { nome: o.area_nome, valores: [] };
-    cur.valores.push(o.pct_ocupacao ?? 0);
+    // Capa cada dia em 100%: um espaço fica, no máximo, "cheio". Sem isso,
+    // eventos que lotam tendas/VIP além da capacidade nominal (ex.: 22 pessoas
+    // numa tenda de 8) geram médias de 200%+, que parecem defeito pro dono.
+    cur.valores.push(Math.min(o.pct_ocupacao ?? 0, 100));
     groupBy.set(key, cur);
   });
 
