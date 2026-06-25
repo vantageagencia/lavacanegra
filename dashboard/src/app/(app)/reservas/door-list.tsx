@@ -1,6 +1,7 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import {
   CheckCircle2,
   AlertTriangle,
@@ -12,6 +13,14 @@ import {
 import { toast } from "sonner";
 
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { atualizarStatusReserva, type ReservaStatus } from "./actions";
 
 export interface DoorReserva {
@@ -55,14 +64,32 @@ export function DoorList({ reservas }: { reservas: DoorReserva[] }) {
   );
 }
 
+// Cada ação pede confirmação num pop-up antes de aplicar (evita clique errado).
+const ACOES: Record<
+  "concluida" | "no_show" | "cancelada",
+  { verbo: string; sucesso: (nome: string) => string }
+> = {
+  concluida: { verbo: "compareceu", sucesso: (n) => `${n} chegou` },
+  no_show: { verbo: "não veio", sucesso: (n) => `${n} não veio` },
+  cancelada: { verbo: "cancelou", sucesso: (n) => `${n}: reserva cancelada` },
+};
+
 function DoorCard({ reserva: r }: { reserva: DoorReserva }) {
   const [pending, startTransition] = useTransition();
+  const [confirmar, setConfirmar] = useState<keyof typeof ACOES | null>(null);
+  const router = useRouter();
 
-  function setStatus(next: ReservaStatus, label: string) {
+  function aplicar(next: keyof typeof ACOES) {
+    setConfirmar(null);
     startTransition(async () => {
       const res = await atualizarStatusReserva(r.id, next);
-      if (res?.error) toast.error("Erro", { description: res.error });
-      else toast.success(label);
+      if (res?.error) {
+        toast.error("Não foi possível marcar", { description: res.error });
+        // Reserva pode ter expirado com a tela aberta → atualiza pra refletir.
+        router.refresh();
+      } else {
+        toast.success(ACOES[next].sucesso(r.cliente_nome));
+      }
     });
   }
 
@@ -129,7 +156,7 @@ function DoorCard({ reserva: r }: { reserva: DoorReserva }) {
           <button
             type="button"
             disabled={pending}
-            onClick={() => setStatus("concluida", `${r.cliente_nome} chegou`)}
+            onClick={() => setConfirmar("concluida")}
             className={cn(
               "flex h-12 items-center justify-center gap-2 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50",
               chegou
@@ -147,7 +174,7 @@ function DoorCard({ reserva: r }: { reserva: DoorReserva }) {
           <button
             type="button"
             disabled={pending}
-            onClick={() => setStatus("no_show", `${r.cliente_nome} não veio`)}
+            onClick={() => setConfirmar("no_show")}
             className={cn(
               "flex h-12 items-center justify-center gap-2 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50",
               naoVeio
@@ -162,18 +189,44 @@ function DoorCard({ reserva: r }: { reserva: DoorReserva }) {
             )}
             Não veio
           </button>
-          {!cancelada && (
-            <button
-              type="button"
-              disabled={pending}
-              onClick={() => setStatus("cancelada", `${r.cliente_nome}: reserva cancelada`)}
-              className="col-span-2 flex h-9 items-center justify-center gap-1.5 rounded-lg text-xs text-muted-foreground transition-colors hover:bg-muted disabled:opacity-50"
-            >
-              <XCircle className="h-3.5 w-3.5" /> Cancelou
-            </button>
-          )}
+          <button
+            type="button"
+            disabled={pending}
+            onClick={() => setConfirmar("cancelada")}
+            className="col-span-2 flex h-9 items-center justify-center gap-1.5 rounded-lg text-xs text-muted-foreground transition-colors hover:bg-muted disabled:opacity-50"
+          >
+            <XCircle className="h-3.5 w-3.5" /> Cancelou
+          </button>
         </div>
       )}
+
+      <Dialog open={confirmar !== null} onOpenChange={(o) => !o && setConfirmar(null)}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Confirmar marcação</DialogTitle>
+          </DialogHeader>
+          {confirmar && (
+            <p className="text-sm text-muted-foreground">
+              Marcar que <span className="font-medium text-foreground">{r.cliente_nome}</span>{" "}
+              <span className="font-medium text-foreground">{ACOES[confirmar].verbo}</span>?
+              {r.hora && (
+                <>
+                  {" "}
+                  <span className="text-xs">({r.hora}{r.data ? ` · ${r.data}` : ""})</span>
+                </>
+              )}
+            </p>
+          )}
+          <DialogFooter className="gap-2">
+            <Button variant="ghost" onClick={() => setConfirmar(null)}>
+              Voltar
+            </Button>
+            <Button onClick={() => confirmar && aplicar(confirmar)}>
+              Confirmar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -4,8 +4,30 @@ import { revalidatePath } from "next/cache";
 
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { assertAuth } from "@/lib/auth";
+import { assertAuth, getUserRole, isAdminRole } from "@/lib/auth";
 import { minPessoasGrupo } from "@/lib/mesa-minimo";
+
+// Manaus não tem horário de verão → offset fixo UTC−4.
+const MANAUS_OFFSET = "-04:00";
+
+/** Hoje (yyyy-MM-dd) no fuso de Manaus. */
+function hojeManaus(): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Manaus",
+  }).format(new Date());
+}
+
+/** Instante (ms) do fim da janela de marcação de uma reserva. */
+function deadlineMs(
+  data_reserva: string,
+  horario: string | null,
+  janelaMin: number
+): number {
+  const hhmmss = (horario ?? "23:59:00").slice(0, 8);
+  const full = hhmmss.length === 5 ? `${hhmmss}:00` : hhmmss;
+  const instante = new Date(`${data_reserva}T${full}${MANAUS_OFFSET}`).getTime();
+  return instante + janelaMin * 60 * 1000;
+}
 
 export type ReservaStatus = "confirmada" | "cancelada" | "no_show" | "concluida";
 
@@ -167,11 +189,51 @@ export async function atualizarStatusReserva(
   id: number,
   status: ReservaStatus
 ) {
-  await assertAuth();
-  const supabase = await createClient();
-  const { error } = await supabase
+  const user = await assertAuth();
+  const role = await getUserRole();
+  const isAdmin = isAdminRole(role);
+
+  // A action é o porteiro (Opção 1): valida tudo e grava via service-role,
+  // pois o RLS de `reservas` é admin-only e o colaborador não passaria por ele.
+  const admin = createAdminClient();
+
+  const { data: reserva } = await admin
     .from("reservas")
-    .update({ status, updated_at: new Date().toISOString() })
+    .select("data_reserva, horario, status")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (!reserva) return { error: "Reserva não encontrada." };
+
+  // Colaborador só marca reserva de HOJE e dentro da janela; depois trava.
+  if (!isAdmin) {
+    const { data: cfg } = await admin
+      .from("app_settings")
+      .select("value")
+      .eq("key", "marcacao_janela_min")
+      .maybeSingle();
+    const janelaMin = parseInt(cfg?.value ?? "60", 10) || 60;
+
+    const ehHoje = reserva.data_reserva === hojeManaus();
+    const dentroJanela =
+      Date.now() <= deadlineMs(reserva.data_reserva, reserva.horario, janelaMin);
+
+    if (!ehHoje || !dentroJanela) {
+      return {
+        error:
+          "Essa reserva já expirou (fora da janela de marcação). Fale com o admin.",
+      };
+    }
+  }
+
+  const { error } = await admin
+    .from("reservas")
+    .update({
+      status,
+      marked_by: user.id,
+      marked_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
     .eq("id", id);
   if (error) return { error: error.message };
   revalidatePath("/reservas");

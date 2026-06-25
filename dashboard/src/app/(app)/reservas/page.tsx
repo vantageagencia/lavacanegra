@@ -26,6 +26,7 @@ import {
 
 import { Filters } from "./filters";
 import { RealtimeListener } from "./realtime-listener";
+import { AutoRefresh } from "./auto-refresh";
 import { WeeklyGrid } from "./weekly-grid";
 import { NovaReservaDialog } from "./nova-reserva-dialog";
 import { RowActions } from "./row-actions";
@@ -152,6 +153,26 @@ export default async function ReservasPage({
   const mesas = (mesasRes.data ?? []) as Mesa[];
   const reservas = (listRes.data ?? []) as Reserva[];
   const pendentes = (pendentesRes.data ?? []) as Reserva[];
+
+  // Janela de marcação (min). Pro colaborador, esconde o que já passou do prazo
+  // (mesma regra que a server action usa pra travar). Manaus = UTC−4 fixo.
+  const { data: cfgJanela } = await supabase
+    .from("app_settings")
+    .select("value")
+    .eq("key", "marcacao_janela_min")
+    .maybeSingle();
+  const janelaMin =
+    parseInt((cfgJanela as { value?: string } | null)?.value ?? "60", 10) || 60;
+  const agoraMs = today.getTime();
+  const dentroDaJanela = (r: { data_reserva: string; horario: string | null }) => {
+    const hhmmss = (r.horario ?? "23:59:00").slice(0, 8);
+    const full = hhmmss.length === 5 ? `${hhmmss}:00` : hhmmss;
+    const deadline =
+      new Date(`${r.data_reserva}T${full}-04:00`).getTime() + janelaMin * 60 * 1000;
+    return agoraMs <= deadline;
+  };
+  // Colaborador só vê as de hoje ainda dentro da janela; admin vê tudo do dia.
+  const reservasColaborador = reservas.filter(dentroDaJanela);
   const semana = (semanaRes.data ?? []) as {
     data_reserva: string;
     periodo: string;
@@ -193,6 +214,7 @@ export default async function ReservasPage({
   return (
     <>
       <RealtimeListener />
+      {!isAdmin && <AutoRefresh seconds={60} />}
 
       <PageHeader
         title="Reservas"
@@ -208,7 +230,7 @@ export default async function ReservasPage({
         }
       />
 
-      {pendentes.length > 0 && (
+      {isAdmin && pendentes.length > 0 && (
         <Card className="border-amber-500/40 bg-amber-500/5">
           <CardHeader className="flex flex-row items-center justify-between pb-3">
             <CardTitle className="flex items-center gap-2 text-base">
@@ -284,7 +306,7 @@ export default async function ReservasPage({
         <CardContent className={isAdmin ? "p-0" : "p-4"}>
           {!isAdmin ? (
             <DoorList
-              reservas={reservas.map((r) => ({
+              reservas={reservasColaborador.map((r) => ({
                 id: r.id,
                 hora: formatHora(r.horario),
                 cliente_nome: r.cliente_nome,
