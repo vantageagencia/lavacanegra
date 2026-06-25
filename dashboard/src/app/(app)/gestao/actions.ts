@@ -81,3 +81,27 @@ export async function deletarMesa(id: number): Promise<ActionResult> {
   revalidatePath("/planta");
   return { ok: true };
 }
+
+/** Salva a config de marcação de presença (janela em minutos + data de corte). */
+export async function salvarConfigMarcacao(
+  janelaMin: number,
+  corte: string
+): Promise<ActionResult> {
+  await assertAdmin();
+  if (!Number.isFinite(janelaMin) || janelaMin < 0 || janelaMin > 1440) {
+    return { error: "Janela inválida (use de 0 a 1440 minutos)." };
+  }
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(corte)) {
+    return { error: "Data de corte inválida." };
+  }
+  const supabase = await createClient();
+  const now = new Date().toISOString();
+  const { error } = await supabase.from("app_settings").upsert([
+    { key: "marcacao_janela_min", value: String(janelaMin), updated_at: now },
+    { key: "marcacao_corte", value: corte, updated_at: now },
+  ]);
+  if (error) return { error: error.message };
+  revalidatePath("/gestao");
+  revalidatePath("/reservas");
+  return { ok: true };
+}

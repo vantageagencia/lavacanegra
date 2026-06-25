@@ -1,4 +1,4 @@
-import { Settings, MapPin, Users, Lock, Trash2, UserCircle2 } from "lucide-react";
+import { Settings, MapPin, Users, Lock, Trash2, UserCircle2, Clock } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -18,6 +18,7 @@ import {
 import { AddColaboradorDialog } from "@/components/dashboard/add-colaborador-dialog";
 
 import { NovaMesaForm } from "./nova-mesa-form";
+import { ConfigMarcacaoForm } from "./config-marcacao-form";
 import { deletarMesa } from "./actions";
 import { removerColaborador } from "../colaboradores/actions";
 
@@ -98,17 +99,30 @@ export default async function GestaoPage() {
     user: { label: "Colaborador", variant: "outline" },
   };
 
-  const [areasRes, mesasRes] = await Promise.all([
+  const [areasRes, mesasRes, cfgRes] = await Promise.all([
     supabase
       .from("areas")
       .select("*")
       .order("ativa", { ascending: false })
       .order("nome"),
     supabase.from("mesas").select("*").order("area_codigo").order("nome"),
+    supabase
+      .from("app_settings")
+      .select("key, value")
+      .in("key", ["marcacao_janela_min", "marcacao_corte"]),
   ]);
 
   const areas = (areasRes.data ?? []) as Area[];
   const mesas = (mesasRes.data ?? []) as Mesa[];
+
+  const cfg = new Map(
+    ((cfgRes.data ?? []) as { key: string; value: string }[]).map((r) => [
+      r.key,
+      r.value,
+    ])
+  );
+  const janelaMin = parseInt(cfg.get("marcacao_janela_min") ?? "60", 10) || 60;
+  const corte = cfg.get("marcacao_corte") ?? "2026-06-25";
 
   const areasAtivas = areas.filter((a) => a.ativa);
   const mesasPorArea = new Map<string, Mesa[]>();
@@ -123,6 +137,18 @@ export default async function GestaoPage() {
         title="Gestão"
         subtitle="Áreas, mesas e configurações operacionais"
       />
+
+      {/* MARCAÇÃO DE PRESENÇA */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Clock className="h-4 w-4 text-primary" /> Marcação de presença
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ConfigMarcacaoForm janelaMin={janelaMin} corte={corte} />
+        </CardContent>
+      </Card>
 
       {/* COLABORADORES */}
       <Card>
