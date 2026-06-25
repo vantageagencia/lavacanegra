@@ -72,10 +72,14 @@ export function DateRangePicker({ from, to, className }: DateRangePickerProps) {
   const [draftFrom, setDraftFrom] = React.useState(from);
   const [draftTo, setDraftTo] = React.useState(to);
 
-  React.useEffect(() => {
+  // Quando a URL (props from/to) muda, ressincroniza os drafts. Ajuste de
+  // estado durante o render (padrão React), em vez de setState num effect.
+  const [prevProps, setPrevProps] = React.useState({ from, to });
+  if (prevProps.from !== from || prevProps.to !== to) {
+    setPrevProps({ from, to });
     setDraftFrom(from);
     setDraftTo(to);
-  }, [from, to]);
+  }
 
   function apply(nextFrom: string, nextTo: string) {
     const params = new URLSearchParams();

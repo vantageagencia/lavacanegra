@@ -27,7 +27,13 @@ export async function loginAction(
   }
 
   revalidatePath("/", "layout");
-  redirect(redirectTo.startsWith("/") ? redirectTo : "/");
+  // Só aceita caminho interno. Bloqueia "//host" e "/\host" (protocol-relative
+  // → open redirect externo) que passariam num simples startsWith("/").
+  const isSafe =
+    redirectTo.startsWith("/") &&
+    !redirectTo.startsWith("//") &&
+    !redirectTo.startsWith("/\\");
+  redirect(isSafe ? redirectTo : "/");
 }
 
 export async function logoutAction() {

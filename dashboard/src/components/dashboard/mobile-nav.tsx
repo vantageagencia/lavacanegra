@@ -20,10 +20,6 @@ export function MobileNav({ role }: MobileNavProps) {
   const [open, setOpen] = React.useState(false);
   const nav = getNavForRole(role);
 
-  React.useEffect(() => {
-    setOpen(false);
-  }, [pathname]);
-
   return (
     <DialogPrimitive.Root open={open} onOpenChange={setOpen}>
       <DialogPrimitive.Trigger
@@ -66,6 +62,7 @@ export function MobileNav({ role }: MobileNavProps) {
                 <Link
                   key={href}
                   href={href}
+                  onClick={() => setOpen(false)}
                   className={cn(
                     "flex items-center gap-3 rounded-md px-3 py-2.5 text-sm transition-colors",
                     active

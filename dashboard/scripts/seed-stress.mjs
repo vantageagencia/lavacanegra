@@ -246,7 +246,8 @@ async function inserirDia(data, total) {
   console.log(`\n→ Gerando ${total} reservas pra ${data}`);
   const reservas = gerarReservasDoDia(data, total);
 
-  // 1) Insert reservas
+  // 1) Insert reservas (descarta _mesa_ids — só usado depois pra alocar mesas)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const payload = reservas.map(({ _mesa_ids, ...r }) => r);
   const { data: inserted, error } = await sb
     .from("reservas")
