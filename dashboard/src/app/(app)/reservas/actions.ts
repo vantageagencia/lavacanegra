@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { assertAuth } from "@/lib/auth";
 import { minPessoasGrupo } from "@/lib/mesa-minimo";
 
 export type ReservaStatus = "confirmada" | "cancelada" | "no_show" | "concluida";
@@ -24,6 +25,7 @@ function normalizePhone(input: string): string {
 }
 
 export async function criarReserva(formData: FormData) {
+  await assertAuth();
   const cliente_nome = String(formData.get("cliente_nome") ?? "").trim();
   const telefone = String(formData.get("cliente_telefone") ?? "").trim();
   const cliente_email =
@@ -107,6 +109,8 @@ export async function criarReserva(formData: FormData) {
         mesa_ids: mesaIds.length > 0 ? mesaIds : undefined,
       }),
       cache: "no-store",
+      // Não deixa a action pendurada se o n8n travar.
+      signal: AbortSignal.timeout(15000),
     });
 
     if (!res.ok) {
@@ -163,6 +167,7 @@ export async function atualizarStatusReserva(
   id: number,
   status: ReservaStatus
 ) {
+  await assertAuth();
   const supabase = await createClient();
   const { error } = await supabase
     .from("reservas")
@@ -176,6 +181,7 @@ export async function atualizarStatusReserva(
 }
 
 export async function editarReserva(id: number, formData: FormData) {
+  await assertAuth();
   const supabase = await createClient();
   const update: Record<string, unknown> = {
     cliente_nome: String(formData.get("cliente_nome") ?? "").trim(),
@@ -201,6 +207,7 @@ export async function editarReserva(id: number, formData: FormData) {
 export async function deletarReserva(
   id: number
 ): Promise<{ ok?: true; error?: string }> {
+  await assertAuth();
   const supabase = await createClient();
   await supabase.from("reservas_mesas").delete().eq("reserva_id", id);
   const { error } = await supabase.from("reservas").delete().eq("id", id);

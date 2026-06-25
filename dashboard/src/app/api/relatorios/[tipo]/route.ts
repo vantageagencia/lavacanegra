@@ -7,6 +7,7 @@ import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 
 import { createClient } from "@/lib/supabase/server";
+import { getUserRole, isAdminRole } from "@/lib/auth";
 import { drawBrandHeader, drawBrandFooter, PDF_THEME } from "@/lib/pdf/brand-header";
 
 // ───────────────────────── Logo cache ─────────────────────────
@@ -26,7 +27,10 @@ async function getLogoDataUrl(): Promise<string | undefined> {
 // ───────────────────────── CSV helpers ─────────────────────────
 function csvEscape(v: unknown): string {
   if (v === null || v === undefined) return "";
-  const s = String(v);
+  let s = String(v);
+  // Neutraliza formula injection: nomes/observações vêm do WhatsApp (não-confiável).
+  // Excel/Sheets executam células que começam com = + - @ tab CR.
+  if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`;
   if (s.includes(",") || s.includes('"') || s.includes("\n")) {
     return `"${s.replace(/"/g, '""')}"`;
   }
@@ -115,6 +119,13 @@ export async function GET(
   const from = sp.get("from") ?? "1900-01-01";
   const to = sp.get("to") ?? format(new Date(), "yyyy-MM-dd");
   const formato = sp.get("formato") ?? "csv"; // 'csv' | 'pdf'
+
+  // Relatórios expõem PII (nomes, telefones, emails) — restrito a admin.
+  // A rota é invocável direto, então o guard não pode depender do nav/página.
+  const role = await getUserRole();
+  if (!isAdminRole(role)) {
+    return NextResponse.json({ error: "Não autorizado" }, { status: 403 });
+  }
 
   const supabase = await createClient();
   const logoDataUrl = await getLogoDataUrl();

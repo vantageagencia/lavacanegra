@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Plus, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,7 +21,12 @@ export function NovaMesaForm({ areas }: NovaMesaFormProps) {
   async function onSubmit(formData: FormData) {
     setPending(true);
     try {
-      await criarMesa(formData);
+      const res = await criarMesa(formData);
+      if (res?.error) {
+        toast.error(res.error);
+        return;
+      }
+      toast.success("Mesa criada.");
       setOpen(false);
     } finally {
       setPending(false);
