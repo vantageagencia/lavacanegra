@@ -2,14 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { LucideIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
 export interface SubNavItem {
   href: string;
   label: string;
-  icon?: LucideIcon;
+  // Ícone já renderizado (<Icon/>), NÃO o componente — funções/componentes não
+  // podem cruzar a fronteira server→client; um elemento React é serializável.
+  icon?: React.ReactNode;
 }
 
 /**
@@ -22,7 +23,7 @@ export function SubNav({ items }: { items: SubNavItem[] }) {
 
   return (
     <div className="inline-flex rounded-md border border-border bg-background/40 p-1">
-      {items.map(({ href, label, icon: Icon }) => {
+      {items.map(({ href, label, icon }) => {
         const isActive = pathname === href;
         return (
           <Link
@@ -35,7 +36,7 @@ export function SubNav({ items }: { items: SubNavItem[] }) {
                 : "text-muted-foreground hover:text-foreground hover:bg-accent/10"
             )}
           >
-            {Icon && <Icon className="h-3.5 w-3.5" />}
+            {icon}
             {label}
           </Link>
         );

@@ -96,8 +96,8 @@ export default async function ClientesPage({
           <>
             <SubNav
               items={[
-                { href: "/clientes", label: "Clientes", icon: UsersIcon },
-                { href: "/olivia", label: "Olivia (IA)", icon: Bot },
+                { href: "/clientes", label: "Clientes", icon: <UsersIcon className="h-3.5 w-3.5" /> },
+                { href: "/olivia", label: "Olivia (IA)", icon: <Bot className="h-3.5 w-3.5" /> },
               ]}
             />
             <ExportButton

@@ -427,8 +427,8 @@ export default async function OverviewPage({ searchParams }: OverviewPageProps) 
           <>
             <SubNav
               items={[
-                { href: "/", label: "Hoje", icon: LayoutDashboard },
-                { href: "/ocupacao", label: "Período", icon: BarChart3 },
+                { href: "/", label: "Hoje", icon: <LayoutDashboard className="h-3.5 w-3.5" /> },
+                { href: "/ocupacao", label: "Período", icon: <BarChart3 className="h-3.5 w-3.5" /> },
               ]}
             />
             <ExportButton
