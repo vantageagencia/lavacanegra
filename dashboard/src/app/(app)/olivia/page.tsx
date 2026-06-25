@@ -21,7 +21,9 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import { requireAdmin } from "@/lib/auth";
 import { PageHeader } from "@/components/dashboard/page-header";
+import { SubNav } from "@/components/dashboard/sub-nav";
 import { DateRangePicker } from "@/components/dashboard/date-range-picker";
+import { Users as UsersIcon, Bot } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { extractMessage, isToolMessage, formatPhone } from "@/lib/format";
@@ -214,7 +216,17 @@ export default async function OliviaPage({ searchParams }: OliviaPageProps) {
                 locale: ptBR,
               })} a ${format(toDate, "dd/MM", { locale: ptBR })}`
         }
-        actions={<DateRangePicker from={fromStr} to={toStr} />}
+        actions={
+          <>
+            <SubNav
+              items={[
+                { href: "/clientes", label: "Clientes", icon: UsersIcon },
+                { href: "/olivia", label: "Olivia (IA)", icon: Bot },
+              ]}
+            />
+            <DateRangePicker from={fromStr} to={toStr} />
+          </>
+        }
       />
 
       {/* ── FUNIL ────────────────────────── */}

@@ -14,8 +14,12 @@ import { ptBR } from "date-fns/locale";
 import { createClient } from "@/lib/supabase/server";
 import { requireAdmin } from "@/lib/auth";
 import { PageHeader } from "@/components/dashboard/page-header";
+import { SubNav } from "@/components/dashboard/sub-nav";
+import { ExportButton } from "@/components/dashboard/export-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Users as UsersIcon, Bot } from "lucide-react";
+import { format } from "date-fns";
 import {
   Table,
   TableBody,
@@ -64,10 +68,15 @@ export default async function ClientesPage({
     .order("ultima_visita", { ascending: false, nullsFirst: false });
 
   if (params.q) {
-    const term = `%${params.q}%`;
-    query = query.or(
-      `user_name.ilike.${term},nome_completo.ilike.${term},jid.ilike.${term}`
-    );
+    // Remove os delimitadores do PostgREST (, . ( ) * \) pra não quebrar/injetar
+    // no filtro .or() — o termo entra só como conteúdo do ilike.
+    const safe = params.q.replace(/[,.()*\\]/g, " ").trim();
+    if (safe) {
+      const term = `%${safe}%`;
+      query = query.or(
+        `user_name.ilike.${term},nome_completo.ilike.${term},jid.ilike.${term}`
+      );
+    }
   }
 
   const { data } = await query.limit(200);
@@ -83,7 +92,23 @@ export default async function ClientesPage({
       <PageHeader
         title="Clientes"
         subtitle="Visão 360° por número do WhatsApp"
-        actions={<SearchInput />}
+        actions={
+          <>
+            <SubNav
+              items={[
+                { href: "/clientes", label: "Clientes", icon: UsersIcon },
+                { href: "/olivia", label: "Olivia (IA)", icon: Bot },
+              ]}
+            />
+            <ExportButton
+              tipo="clientes"
+              label="Exportar"
+              defaultFrom={null}
+              defaultTo={format(new Date(), "yyyy-MM-dd")}
+            />
+            <SearchInput />
+          </>
+        }
       />
 
       <section className="grid gap-4 grid-cols-3">

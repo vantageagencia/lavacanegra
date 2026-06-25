@@ -31,6 +31,7 @@ import { NovaReservaDialog } from "./nova-reserva-dialog";
 import { RowActions } from "./row-actions";
 import { ServiceTabs } from "./service-tabs";
 import { WeekNav } from "./week-nav";
+import { DoorList } from "./door-list";
 
 export const dynamic = "force-dynamic";
 
@@ -236,8 +237,20 @@ export default async function ReservasPage({
           </div>
           <ServiceTabs active={effectivePeriodo} />
         </CardHeader>
-        <CardContent className="p-0">
-          {reservas.length === 0 ? (
+        <CardContent className={isAdmin ? "p-0" : "p-4"}>
+          {!isAdmin ? (
+            <DoorList
+              reservas={reservas.map((r) => ({
+                id: r.id,
+                hora: formatHora(r.horario),
+                cliente_nome: r.cliente_nome,
+                qtd_pessoas: r.qtd_pessoas,
+                area: areaNome(r.area_codigo),
+                mesa: mesasDaReserva(r),
+                status: r.status,
+              }))}
+            />
+          ) : reservas.length === 0 ? (
             <p className="px-6 pb-6 text-sm text-muted-foreground">
               Nenhuma reserva encontrada para os filtros atuais.
             </p>

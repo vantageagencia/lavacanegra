@@ -12,7 +12,10 @@ import { createClient } from "@/lib/supabase/server";
 import { requireAdmin } from "@/lib/auth";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { KpiCard } from "@/components/dashboard/kpi-card";
+import { SubNav } from "@/components/dashboard/sub-nav";
+import { ExportButton } from "@/components/dashboard/export-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { LayoutDashboard, BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 import { RangePicker } from "./range-picker";
@@ -164,9 +167,25 @@ export default async function OcupacaoPage({
   return (
     <>
       <PageHeader
-        title="Ocupação"
+        title="Visão geral"
         subtitle={subtitleLabel}
-        actions={<RangePicker />}
+        actions={
+          <>
+            <SubNav
+              items={[
+                { href: "/", label: "Hoje", icon: LayoutDashboard },
+                { href: "/ocupacao", label: "Período", icon: BarChart3 },
+              ]}
+            />
+            <ExportButton
+              tipo="ocupacao"
+              label="Exportar"
+              defaultFrom={format(start, "yyyy-MM-dd")}
+              defaultTo={format(end, "yyyy-MM-dd")}
+            />
+            <RangePicker />
+          </>
+        }
       />
 
       {/* KPIs */}

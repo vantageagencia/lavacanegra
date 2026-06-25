@@ -22,7 +22,10 @@ import { createClient } from "@/lib/supabase/server";
 import { requireAdmin } from "@/lib/auth";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { KpiCard } from "@/components/dashboard/kpi-card";
+import { SubNav } from "@/components/dashboard/sub-nav";
+import { ExportButton } from "@/components/dashboard/export-button";
 import { DateNav } from "@/app/(app)/planta/date-nav";
+import { LayoutDashboard, BarChart3 } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -418,9 +421,25 @@ export default async function OverviewPage({ searchParams }: OverviewPageProps) 
   return (
     <>
       <PageHeader
-        title="Overview"
+        title="Visão geral"
         subtitle={subtitlePeriodo}
-        actions={<DateNav data={fromStr} />}
+        actions={
+          <>
+            <SubNav
+              items={[
+                { href: "/", label: "Hoje", icon: LayoutDashboard },
+                { href: "/ocupacao", label: "Período", icon: BarChart3 },
+              ]}
+            />
+            <ExportButton
+              tipo="reservas"
+              label="Exportar"
+              defaultFrom={thirtyDaysAgo}
+              defaultTo={todayStr}
+            />
+            <DateNav data={fromStr} />
+          </>
+        }
       />
 
       {/* ── KPIs do período ──────────────── */}
