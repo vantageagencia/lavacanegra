@@ -3,7 +3,6 @@ import {
   Users,
   TrendingUp,
   AlertTriangle,
-  MessageCircle,
   Bot,
   Clock,
   CalendarRange,
@@ -39,7 +38,6 @@ import {
   periodoLabel,
   statusLabel,
   statusVariant,
-  extractMessage,
   type ReservaStatus,
 } from "@/lib/format";
 
@@ -63,12 +61,6 @@ type Area = {
   nome: string;
   capacidade_max: number;
   evento_fechado: boolean;
-};
-
-type ChatRow = {
-  id: number;
-  session_id: string;
-  message: { type?: string; content?: string };
 };
 
 interface OverviewPageProps {
@@ -107,7 +99,6 @@ export default async function OverviewPage({ searchParams }: OverviewPageProps) 
     proxSemanaRes,
     contatosNovosRes,
     reservasViaJIDRes,
-    ultimasMsgsRes,
     reservasHojeRes,
     pastConfirmadasRes,
   ] = await Promise.all([
@@ -148,11 +139,6 @@ export default async function OverviewPage({ searchParams }: OverviewPageProps) 
       .lte("created_at", `${toStr}T23:59:59`)
       .like("cliente_telefone", "%@s.whatsapp.net"),
     supabase
-      .from("n8n_chat_histories")
-      .select("id, session_id, message")
-      .order("id", { ascending: false })
-      .limit(5),
-    supabase
       .from("reservas")
       .select(
         "id, horario, cliente_nome, area_codigo, qtd_pessoas, periodo, status, reservas_mesas(mesa_id)"
@@ -176,7 +162,6 @@ export default async function OverviewPage({ searchParams }: OverviewPageProps) 
     qtd_pessoas: number;
     data_reserva: string;
   }[];
-  const ultimasMsgs = (ultimasMsgsRes.data ?? []) as ChatRow[];
   const reservasHoje = (reservasHojeRes.data ?? []) as Array<{
     id: number;
     horario: string;
@@ -640,9 +625,9 @@ export default async function OverviewPage({ searchParams }: OverviewPageProps) 
         </Card>
       </section>
 
-      {/* ── Reservas do período + Últimas conversas ──── */}
-      <section className="grid gap-4 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
+      {/* ── Reservas do período ──── */}
+      <section>
+        <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
               <CalendarDays className="h-4 w-4 text-primary" />
@@ -691,41 +676,6 @@ export default async function OverviewPage({ searchParams }: OverviewPageProps) 
                     </Badge>
                   </li>
                 ))}
-              </ul>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <MessageCircle className="h-4 w-4 text-primary" /> Últimas
-              conversas
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            {ultimasMsgs.length === 0 ? (
-              <p className="px-6 pb-6 text-sm text-muted-foreground">
-                Sem conversas registradas.
-              </p>
-            ) : (
-              <ul className="divide-y divide-border">
-                {ultimasMsgs.map((m) => {
-                  const ex = extractMessage(m.message);
-                  return (
-                    <li key={m.id} className="px-6 py-3 space-y-1">
-                      <p className="flex items-center justify-between gap-2 text-xs">
-                        <span className="text-muted-foreground">
-                          {ex.type === "ai" ? "🤖 Olivia" : "🧑 Cliente"}
-                        </span>
-                        <span className="text-muted-foreground truncate max-w-[8rem]">
-                          {m.session_id.replace("@s.whatsapp.net", "")}
-                        </span>
-                      </p>
-                      <p className="text-sm line-clamp-2">{ex.content}</p>
-                    </li>
-                  );
-                })}
               </ul>
             )}
           </CardContent>
