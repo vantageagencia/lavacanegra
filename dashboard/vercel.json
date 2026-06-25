@@ -3,5 +3,10 @@
   "framework": "nextjs",
   "regions": ["gru1"],
   "buildCommand": "next build",
-  "installCommand": "npm install"
+  "installCommand": "npm install",
+  "git": {
+    "deploymentEnabled": {
+      "main": false
+    }
+  }
 }
