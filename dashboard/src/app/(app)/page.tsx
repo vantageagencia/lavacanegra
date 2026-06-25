@@ -16,6 +16,7 @@ import {
   isValid,
 } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import Link from "next/link";
 
 import { createClient } from "@/lib/supabase/server";
 import { requireAdmin } from "@/lib/auth";
@@ -694,6 +695,14 @@ export default async function OverviewPage({ searchParams }: OverviewPageProps) 
                   <li key={i}>· {a}</li>
                 ))}
               </ul>
+              {pastConfirmadasCount > 0 && (
+                <Link
+                  href="/reservas?view=pendentes"
+                  className="inline-block pt-1 text-xs font-medium text-primary hover:underline"
+                >
+                  Ver pendentes de marcação →
+                </Link>
+              )}
             </div>
           </CardContent>
         </Card>

@@ -1,6 +1,6 @@
-import { addDays, format, startOfWeek } from "date-fns";
+import { addDays, format, startOfWeek, subDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { CalendarDays, Users, AlertTriangle } from "lucide-react";
+import { CalendarDays, Users } from "lucide-react";
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getUserRole, isAdminRole } from "@/lib/auth";
@@ -32,7 +32,9 @@ import { NovaReservaDialog } from "./nova-reserva-dialog";
 import { RowActions } from "./row-actions";
 import { ServiceTabs } from "./service-tabs";
 import { WeekNav } from "./week-nav";
-import { DoorList } from "./door-list";
+import { DoorList, type DoorReserva } from "./door-list";
+import { PendentesPanel } from "./pendentes-panel";
+import { ViewTabs } from "./view-tabs";
 
 export const dynamic = "force-dynamic";
 
@@ -48,6 +50,8 @@ type Reserva = {
   periodo: string;
   status: ReservaStatus;
   observacoes: string | null;
+  marked_by: string | null;
+  marked_at: string | null;
   reservas_mesas: { mesa_id: number }[] | null;
 };
 
@@ -70,6 +74,8 @@ type SP = Promise<{
   periodo?: string;
   area?: string;
   status?: string;
+  view?: string;
+  pper?: string;
 }>;
 
 function defaultPeriodoByTime(): "almoco" | "jantar" {
@@ -122,7 +128,7 @@ export default async function ReservasPage({
       let q = supabase
         .from("reservas")
         .select(
-          "id, cliente_nome, cliente_telefone, cliente_email, area_codigo, qtd_pessoas, data_reserva, horario, periodo, status, observacoes, reservas_mesas(mesa_id)"
+          "id, cliente_nome, cliente_telefone, cliente_email, area_codigo, qtd_pessoas, data_reserva, horario, periodo, status, observacoes, marked_by, marked_at, reservas_mesas(mesa_id)"
         )
         .eq("data_reserva", filterDate)
         .order("horario");
@@ -154,15 +160,16 @@ export default async function ReservasPage({
   const reservas = (listRes.data ?? []) as Reserva[];
   const pendentes = (pendentesRes.data ?? []) as Reserva[];
 
-  // Janela de marcação (min). Pro colaborador, esconde o que já passou do prazo
-  // (mesma regra que a server action usa pra travar). Manaus = UTC−4 fixo.
-  const { data: cfgJanela } = await supabase
+  // Config: janela de marcação (min) + data de corte (go-live). Manaus = UTC−4.
+  const { data: cfgRows } = await supabase
     .from("app_settings")
-    .select("value")
-    .eq("key", "marcacao_janela_min")
-    .maybeSingle();
-  const janelaMin =
-    parseInt((cfgJanela as { value?: string } | null)?.value ?? "60", 10) || 60;
+    .select("key, value")
+    .in("key", ["marcacao_janela_min", "marcacao_corte"]);
+  const cfg = new Map(
+    ((cfgRows ?? []) as { key: string; value: string }[]).map((r) => [r.key, r.value])
+  );
+  const janelaMin = parseInt(cfg.get("marcacao_janela_min") ?? "60", 10) || 60;
+  const cutoff = cfg.get("marcacao_corte") ?? "1900-01-01";
   const agoraMs = today.getTime();
   const dentroDaJanela = (r: { data_reserva: string; horario: string | null }) => {
     const hhmmss = (r.horario ?? "23:59:00").slice(0, 8);
@@ -204,6 +211,89 @@ export default async function ReservasPage({
 
   const totalPessoas = reservas.reduce((s, r) => s + (r.qtd_pessoas ?? 0), 0);
 
+  // ── Parte 4: aba Pendentes (admin) — badge, nomes, resumo, listas ──────
+  const pendentesView = isAdmin && params.view === "pendentes";
+  const pper = [7, 30, 90].includes(Number(params.pper)) ? Number(params.pper) : 30;
+  const usersMap = new Map<string, { nome: string; role: string }>();
+  let badgePendentes = 0;
+  const resumoColaboradores: { nome: string; marcadas: number }[] = [];
+  let naoMarcadas = 0;
+  let pendentesPost: DoorReserva[] = [];
+  let pendentesLegado: DoorReserva[] = [];
+
+  if (isAdmin) {
+    const hojeStr = format(today, "yyyy-MM-dd");
+    const { count } = await supabase
+      .from("reservas")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "confirmada")
+      .lt("data_reserva", hojeStr)
+      .gte("data_reserva", cutoff);
+    badgePendentes = count ?? 0;
+
+    const [rolesRes, usersRes] = await Promise.all([
+      supabase.from("user_roles").select("user_id, role"),
+      supabase.auth.admin.listUsers(),
+    ]);
+    const rolesMap = new Map(
+      ((rolesRes.data ?? []) as { user_id: string; role: string }[]).map((r) => [
+        r.user_id,
+        r.role,
+      ])
+    );
+    for (const u of usersRes.data?.users ?? []) {
+      usersMap.set(u.id, {
+        nome: (u.user_metadata?.nome as string | undefined) || u.email || "—",
+        role: rolesMap.get(u.id) ?? "user",
+      });
+    }
+  }
+
+  if (pendentesView) {
+    const toDoor = (r: Reserva): DoorReserva => ({
+      id: r.id,
+      hora: formatHora(r.horario),
+      cliente_nome: r.cliente_nome,
+      qtd_pessoas: r.qtd_pessoas,
+      area: areaNome(r.area_codigo),
+      mesa: mesasDaReserva(r),
+      status: r.status,
+      data: format(new Date(r.data_reserva + "T00:00:00"), "EEE, dd/MM", {
+        locale: ptBR,
+      }),
+    });
+    pendentesPost = pendentes.filter((p) => p.data_reserva >= cutoff).map(toDoor);
+    pendentesLegado = pendentes.filter((p) => p.data_reserva < cutoff).map(toDoor);
+
+    const periodStart = format(subDays(today, pper), "yyyy-MM-dd");
+    const scopeStart = periodStart >= cutoff ? periodStart : cutoff;
+    const ontem = format(subDays(today, 1), "yyyy-MM-dd");
+    const { data: scope } = await supabase
+      .from("reservas")
+      .select("marked_by, status")
+      .gte("data_reserva", scopeStart)
+      .lte("data_reserva", ontem);
+    const porColab = new Map<string, number>();
+    for (const r of (scope ?? []) as {
+      marked_by: string | null;
+      status: string;
+    }[]) {
+      if (r.status === "confirmada") {
+        naoMarcadas++;
+        continue;
+      }
+      if (!r.marked_by) continue; // cancelada pelo sistema, não conta
+      const info = usersMap.get(r.marked_by);
+      if (info && info.role === "user") {
+        porColab.set(info.nome, (porColab.get(info.nome) ?? 0) + 1);
+      } else {
+        naoMarcadas++; // marcada por admin = colaborador não fez a tempo
+      }
+    }
+    for (const [nome, marcadas] of porColab)
+      resumoColaboradores.push({ nome, marcadas });
+  }
+
   const listaLabel =
     effectivePeriodo === "almoco"
       ? "Almoço"
@@ -230,39 +320,19 @@ export default async function ReservasPage({
         }
       />
 
-      {isAdmin && pendentes.length > 0 && (
-        <Card className="border-amber-500/40 bg-amber-500/5">
-          <CardHeader className="flex flex-row items-center justify-between pb-3">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <AlertTriangle className="h-4 w-4 text-amber-500" />
-              Pendentes de marcação
-            </CardTitle>
-            <Badge variant="warning">{pendentes.length}</Badge>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <p className="text-xs text-muted-foreground">
-              Reservas passadas que ainda não foram marcadas. Marque cada uma como
-              compareceu, não veio ou cancelou.
-            </p>
-            <DoorList
-              reservas={pendentes.map((r) => ({
-                id: r.id,
-                hora: formatHora(r.horario),
-                cliente_nome: r.cliente_nome,
-                qtd_pessoas: r.qtd_pessoas,
-                area: areaNome(r.area_codigo),
-                mesa: mesasDaReserva(r),
-                status: r.status,
-                data: format(new Date(r.data_reserva + "T00:00:00"), "EEE, dd/MM", {
-                  locale: ptBR,
-                }),
-              }))}
-            />
-          </CardContent>
-        </Card>
+      {isAdmin && <ViewTabs pendentesCount={badgePendentes} />}
+
+      {pendentesView && (
+        <PendentesPanel
+          periodo={pper}
+          resumoColaboradores={resumoColaboradores}
+          naoMarcadas={naoMarcadas}
+          pendentes={pendentesPost}
+          legado={pendentesLegado}
+        />
       )}
 
-      {isAdmin && (
+      {isAdmin && !pendentesView && (
         <Card>
           <CardContent className="p-4">
             <Filters areas={areas} />
@@ -270,7 +340,7 @@ export default async function ReservasPage({
         </Card>
       )}
 
-      {isAdmin && (
+      {isAdmin && !pendentesView && (
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-3">
             <CardTitle className="flex items-center gap-2 text-base">
@@ -286,6 +356,7 @@ export default async function ReservasPage({
         </Card>
       )}
 
+      {!pendentesView && (
       <Card>
         <CardHeader className="space-y-3 pb-3">
           <div className="flex flex-row items-center justify-between">
@@ -378,6 +449,16 @@ export default async function ReservasPage({
                         <Badge variant={statusVariant[r.status] ?? "outline"}>
                           {statusLabel[r.status] ?? r.status}
                         </Badge>
+                        {r.marked_by && r.marked_at && (
+                          <p className="mt-1 text-[10px] text-muted-foreground">
+                            por {usersMap.get(r.marked_by)?.nome ?? "—"} ·{" "}
+                            {new Date(r.marked_at).toLocaleTimeString("pt-BR", {
+                              timeZone: "America/Manaus",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </p>
+                        )}
                       </TableCell>
                       <TableCell>
                         <RowActions id={r.id} status={r.status} />
@@ -390,6 +471,7 @@ export default async function ReservasPage({
           )}
         </CardContent>
       </Card>
+      )}
     </>
   );
 }
