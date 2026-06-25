@@ -12,7 +12,7 @@ body {
 }
 
 .hero {
-  background: url('img/topo1.jpg') no-repeat center center;
+  background: url('img/topo1.webp') no-repeat center center;
   background-size: cover;
   padding: 520px 20px 40px;
   position: relative;
@@ -84,7 +84,7 @@ footer a {
 /* MOBILE: Centraliza logo e ícones */
 @media (max-width: 600px) {
   .hero {
-    background: url('img/topo2.jpg') no-repeat center center;
+    background: url('img/topo2.webp') no-repeat center center;
     background-size: cover;
     padding: 397px 10px 30px;
   }

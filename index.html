@@ -3,7 +3,21 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LA VACA NEGRA</title>
+  <title>La Vaca Negra — Cortes Argentinos, Parrilla e Hambúrguer em Manaus</title>
+  <meta name="description" content="La Vaca Negra — parrilla argentina em Manaus (Adrianópolis). Cortes argentinos, hambúrgueres e delivery. Faça sua reserva ou peça pelo WhatsApp e iFood." />
+
+  <!-- Open Graph / WhatsApp / redes sociais -->
+  <meta property="og:type" content="restaurant" />
+  <meta property="og:title" content="La Vaca Negra — Parrilla Argentina em Manaus" />
+  <meta property="og:description" content="Cortes argentinos, hambúrgueres e delivery em Manaus. Reserve ou peça pelo WhatsApp." />
+  <!-- TODO: trocar por URL absoluta do domínio da landing (ex.: https://seudominio.com/img/logo.png) p/ a prévia aparecer no WhatsApp -->
+  <meta property="og:image" content="img/logo.png" />
+  <meta property="og:locale" content="pt_BR" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="theme-color" content="#000000" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
   <link rel="icon" href="img/favicon.png" type="image/png">
@@ -67,7 +81,7 @@
       background: var(--bar-color);
       transform-origin: left;   /* cresce agora a partir da esquerda */
       transform: scaleX(0);
-      animation: fillLtoR 2.5s ease-in-out forwards;
+      animation: fillLtoR 0.7s ease-in-out forwards;
     }
     .loader-text{
       margin-top: 10px;
@@ -95,8 +109,7 @@
   <div id="loader" class="loader-wrap">
     <div class="loader-inner">
       <div class="loader-logo">
-        <!-- Coloque sua logo em img/logo.png -->
-        <img src="img/logo.png" alt="Logo K2 Business" />
+        <img src="img/logo.png" alt="La Vaca Negra" />
       </div>
       <div class="loader-bar">
         <span class="loader-fill"></span>
@@ -109,43 +122,43 @@
   <!-- ========== SEU CONTEÚDO ORIGINAL ========== -->
   <div class="hero">
     <div class="logo-container">
-      <img src="img/logo.png" alt="Logo" class="logo" />
+      <img src="img/logo.png" alt="La Vaca Negra — Parrilla Argentina" class="logo" width="200" height="200" />
       <br><br>
       <div class="social-icons">
-        <a href="https://www.instagram.com/michelbrasildecor/"><img src="img/instagram.png" alt="Instagram" /></a>
-        <a href="https://wa.me/557581913891"><img src="img/whatsapp.png" alt="WhatsApp" /></a>
+        <a href="https://www.instagram.com/michelbrasildecor/" target="_blank" rel="noopener noreferrer" aria-label="Instagram do La Vaca Negra"><img src="img/instagram.png" alt="Instagram" width="40" height="40" /></a>
+        <a href="https://wa.me/557581913891" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp do La Vaca Negra"><img src="img/whatsapp.png" alt="WhatsApp" width="40" height="40" /></a>
       </div>
     </div>
-    <div class="arrow"><font size="3">Clique e acesse ↓</font></div>
+    <div class="arrow"><span style="font-size:1.05rem">Clique e acesse ↓</span></div>
   </div>
 
   <div class="banners">
-    <a href="https://wa.me/557581913891" target="_blank" class="desktop-banner"><img src="img/banner.png" alt="Banner 1" /></a>
-    <a href="https://la-vaca-negra.ola.click/products" target="_blank" class="desktop-banner"><img src="img/banner2.png" alt="Banner 2" /></a>
-    <a href="https://lavacanegracortesargentinos.ola.click/products" target="_blank" class="desktop-banner"><img src="img/banner3.png" alt="Banner 3" /></a>
-     <a href="https://www.google.com.br/search?client=safari&hl=pt-br&sxsrf=ALiCzsazRRIoZUEID9TzzIHr9jAzVsDpvg:1660745379104&q=La+Vaca+Negra+Cortes+Argentinos&ludocid=6276500884344451912&gsas=1&client=safari&lsig=AB86z5VyklAjAbY4uTKwzJFjyAEh&kgs=5f5820457c83a5f6&shndl=-1&source=sh/x/kp/local/3&entrypoint=sh/x/kp/local" target="_blank" class="desktop-banner"><img src="img/banner4.png" alt="Banner 4" /></a>
-      <a href="https://api.whatsapp.com/send?phone=5592984120110&text=Ol%C3%A1,%20Gostaria%20de%20fazer%20uma%20reserva%20no%20La%20Vaca%20Negra!" target="_blank" class="desktop-banner"><img src="img/banner5.png" alt="Banner 5" /></a>
-      <a href="https://api.whatsapp.com/send?phone=5592985652606&text=Gostaria%20de%20fazer%20um%20pedido" target="_blank" class="desktop-banner"><img src="img/banner6.png" alt="Banner 5" /></a>
-      <a href="https://www.ifood.com.br/delivery/manaus-am/hamburguesa-de-la-vaca-adrianopolis/3432b9ba-7596-43c1-80cc-ed39663c8428" target="_blank" class="desktop-banner"><img src="img/banner7.png" alt="Banner 5" /></a>
-      <a href="https://www.ifood.com.br/delivery/manaus-am/la-vaca-negra-cortes-argentinos-adrianopolis/96490fd2-bdf3-4328-b94f-7f3f6c082e67" target="_blank" class="desktop-banner"><img src="img/banner8.png" alt="Banner 5" /></a>
+    <a href="https://wa.me/557581913891" target="_blank" rel="noopener noreferrer" class="desktop-banner"><img src="img/banner.webp" alt="Reservar pelo WhatsApp" width="1017" height="453" loading="lazy" decoding="async" /></a>
+    <a href="https://la-vaca-negra.ola.click/products" target="_blank" rel="noopener noreferrer" class="desktop-banner"><img src="img/banner2.webp" alt="Cardápio e pedido online" width="1017" height="453" loading="lazy" decoding="async" /></a>
+    <a href="https://lavacanegracortesargentinos.ola.click/products" target="_blank" rel="noopener noreferrer" class="desktop-banner"><img src="img/banner3.webp" alt="Cardápio — cortes argentinos" width="1017" height="453" loading="lazy" decoding="async" /></a>
+     <a href="https://www.google.com.br/search?client=safari&hl=pt-br&sxsrf=ALiCzsazRRIoZUEID9TzzIHr9jAzVsDpvg:1660745379104&q=La+Vaca+Negra+Cortes+Argentinos&ludocid=6276500884344451912&gsas=1&client=safari&lsig=AB86z5VyklAjAbY4uTKwzJFjyAEh&kgs=5f5820457c83a5f6&shndl=-1&source=sh/x/kp/local/3&entrypoint=sh/x/kp/local" target="_blank" rel="noopener noreferrer" class="desktop-banner"><img src="img/banner4.webp" alt="Avaliações no Google" width="1017" height="453" loading="lazy" decoding="async" /></a>
+      <a href="https://api.whatsapp.com/send?phone=5592984120110&text=Ol%C3%A1,%20Gostaria%20de%20fazer%20uma%20reserva%20no%20La%20Vaca%20Negra!" target="_blank" rel="noopener noreferrer" class="desktop-banner"><img src="img/banner5.webp" alt="Fazer reserva pelo WhatsApp" width="1017" height="453" loading="lazy" decoding="async" /></a>
+      <a href="https://api.whatsapp.com/send?phone=5592985652606&text=Gostaria%20de%20fazer%20um%20pedido" target="_blank" rel="noopener noreferrer" class="desktop-banner"><img src="img/banner6.webp" alt="Fazer pedido pelo WhatsApp" width="1017" height="453" loading="lazy" decoding="async" /></a>
+      <a href="https://www.ifood.com.br/delivery/manaus-am/hamburguesa-de-la-vaca-adrianopolis/3432b9ba-7596-43c1-80cc-ed39663c8428" target="_blank" rel="noopener noreferrer" class="desktop-banner"><img src="img/banner7.webp" alt="Pedir hambúrguer no iFood" width="1017" height="453" loading="lazy" decoding="async" /></a>
+      <a href="https://www.ifood.com.br/delivery/manaus-am/la-vaca-negra-cortes-argentinos-adrianopolis/96490fd2-bdf3-4328-b94f-7f3f6c082e67" target="_blank" rel="noopener noreferrer" class="desktop-banner"><img src="img/banner8.webp" alt="Pedir cortes argentinos no iFood" width="1017" height="453" loading="lazy" decoding="async" /></a>
 
-    <a href="https://wa.me/557581913891" target="_blank" class="mobile-banner"><img src="img/banner1.png" alt="Banner 1 Mobile" /></a>
-    <a href="https://la-vaca-negra.ola.click/products" target="_blank" class="mobile-banner"><img src="img/banner22.png" alt="Banner 2 Mobile" /></a>
-    <a href="https://lavacanegracortesargentinos.ola.click/products" target="_blank" class="mobile-banner"><img src="img/banner33.png" alt="Banner 3 Mobile" /></a>
-  <a href="https://www.google.com.br/search?client=safari&hl=pt-br&sxsrf=ALiCzsazRRIoZUEID9TzzIHr9jAzVsDpvg:1660745379104&q=La+Vaca+Negra+Cortes+Argentinos&ludocid=6276500884344451912&gsas=1&client=safari&lsig=AB86z5VyklAjAbY4uTKwzJFjyAEh&kgs=5f5820457c83a5f6&shndl=-1&source=sh/x/kp/local/3&entrypoint=sh/x/kp/local" target="_blank" class="mobile-banner"><img src="img/banner44.png" alt="Banner 4 Mobile" /></a>
-  <a href="https://api.whatsapp.com/send?phone=5592984120110&text=Ol%C3%A1,%20Gostaria%20de%20fazer%20uma%20reserva%20no%20La%20Vaca%20Negra!" target="_blank" class="mobile-banner"><img src="img/banner55.png" alt="Banner 5 Mobile" /></a>
-<a href="https://api.whatsapp.com/send?phone=5592985652606&text=Gostaria%20de%20fazer%20um%20pedido" target="_blank" class="mobile-banner"><img src="img/banner66.png" alt="Banner 6 Mobile" /></a>
-<a href="https://www.ifood.com.br/delivery/manaus-am/hamburguesa-de-la-vaca-adrianopolis/3432b9ba-7596-43c1-80cc-ed39663c8428" target="_blank" class="mobile-banner"><img src="img/banner77.png" alt="Banner 7 Mobile" /></a>
-<a href="https://www.ifood.com.br/delivery/manaus-am/la-vaca-negra-cortes-argentinos-adrianopolis/96490fd2-bdf3-4328-b94f-7f3f6c082e67" target="_blank" class="mobile-banner"><img src="img/banner88.png" alt="Banner 8 Mobile" /></a></div>
+    <a href="https://wa.me/557581913891" target="_blank" rel="noopener noreferrer" class="mobile-banner"><img src="img/banner.webp" alt="Reservar pelo WhatsApp" width="1017" height="453" loading="lazy" decoding="async" /></a>
+    <a href="https://la-vaca-negra.ola.click/products" target="_blank" rel="noopener noreferrer" class="mobile-banner"><img src="img/banner2.webp" alt="Cardápio e pedido online" width="1017" height="453" loading="lazy" decoding="async" /></a>
+    <a href="https://lavacanegracortesargentinos.ola.click/products" target="_blank" rel="noopener noreferrer" class="mobile-banner"><img src="img/banner3.webp" alt="Cardápio — cortes argentinos" width="1017" height="453" loading="lazy" decoding="async" /></a>
+  <a href="https://www.google.com.br/search?client=safari&hl=pt-br&sxsrf=ALiCzsazRRIoZUEID9TzzIHr9jAzVsDpvg:1660745379104&q=La+Vaca+Negra+Cortes+Argentinos&ludocid=6276500884344451912&gsas=1&client=safari&lsig=AB86z5VyklAjAbY4uTKwzJFjyAEh&kgs=5f5820457c83a5f6&shndl=-1&source=sh/x/kp/local/3&entrypoint=sh/x/kp/local" target="_blank" rel="noopener noreferrer" class="mobile-banner"><img src="img/banner4.webp" alt="Avaliações no Google" width="1017" height="453" loading="lazy" decoding="async" /></a>
+  <a href="https://api.whatsapp.com/send?phone=5592984120110&text=Ol%C3%A1,%20Gostaria%20de%20fazer%20uma%20reserva%20no%20La%20Vaca%20Negra!" target="_blank" rel="noopener noreferrer" class="mobile-banner"><img src="img/banner5.webp" alt="Fazer reserva pelo WhatsApp" width="1017" height="453" loading="lazy" decoding="async" /></a>
+<a href="https://api.whatsapp.com/send?phone=5592985652606&text=Gostaria%20de%20fazer%20um%20pedido" target="_blank" rel="noopener noreferrer" class="mobile-banner"><img src="img/banner6.webp" alt="Fazer pedido pelo WhatsApp" width="1017" height="453" loading="lazy" decoding="async" /></a>
+<a href="https://www.ifood.com.br/delivery/manaus-am/hamburguesa-de-la-vaca-adrianopolis/3432b9ba-7596-43c1-80cc-ed39663c8428" target="_blank" rel="noopener noreferrer" class="mobile-banner"><img src="img/banner7.webp" alt="Pedir hambúrguer no iFood" width="1017" height="453" loading="lazy" decoding="async" /></a>
+<a href="https://www.ifood.com.br/delivery/manaus-am/la-vaca-negra-cortes-argentinos-adrianopolis/96490fd2-bdf3-4328-b94f-7f3f6c082e67" target="_blank" rel="noopener noreferrer" class="mobile-banner"><img src="img/banner8.webp" alt="Pedir cortes argentinos no iFood" width="1017" height="453" loading="lazy" decoding="async" /></a></div>
   
 
   <footer>
-    © Copyright 2025 LA VACA NEGRA. Todos os direitos reservados. <br />
+    © Copyright 2026 LA VACA NEGRA. Todos os direitos reservados. <br />
   </footer>
   <!-- ========== FIM DO CONTEÚDO ========== -->
 
   <script>
-    const LOADER_TIMEOUT = 2500;
+    const LOADER_TIMEOUT = 300;
     window.addEventListener('load', () => {
       const loader = document.getElementById('loader');
       setTimeout(() => {
